@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Retinopathy Analyzer</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(120deg, #2b1055, #7597de);
+      color: white;
+    }
+
+    header {
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 1.2em;
+      opacity: 0.8;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      padding: 0 20px;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(152, 7, 7, 0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px #7f5af0;
+    }
+
+    .card h2 {
+      font-size: 2em;
+      margin-bottom: 15px;
+    }
+
+    .card p {
+      font-size: 1em;
+      line-height: 1.5;
+      color: #eee;
+      margin-bottom: 20px;
+    }
+
+    .card img {
+      width: 180px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+    }
+
+    .content-section {
+      display: none;
+      padding: 30px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    .content-section h2 {
+      font-size: 2em;
+      margin-bottom: 15px;
+    }
+
+    .content-section p {
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: #e0e0e0;
+      margin-bottom: 15px;
+    }
+
+    .content-section img {
+      width: 100%;
+      max-width: 500px;
+      display: block;
+      margin: 20px auto;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    #backButton {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: #fff;
+      color: #2b1055;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 999;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 20px;
+      }
+
+      .card h2 {
+        font-size: 1.5em;
+      }
+
+      .content-section h2 {
+        font-size: 1.5em;
+      }
+    }
+    
+
+    #retinoBot {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #fff;
+      color: #2b1055;
+      padding: 14px 16px;
+      font-size: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+  
+    #chatBox {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      max-height: 400px;
+      background-color: rgba(43, 16, 85, 0.95);
+      color: white;
+      border-radius: 15px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+  
+    .chat-hidden {
+      display: none;
+    }
+  
+    .chat-header {
+      background-color: #7f5af0;
+      padding: 12px;
+      font-weight: bold;
+      text-align: left;
+    }
+  
+    .chat-body {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+  
+    .chat-body ul {
+      padding-left: 15px;
+    }
+  
+    .chat-body li {
+      margin: 8px 0;
+      cursor: pointer;
+      color: #98c1ff;
+    }
+  
+    .chat-body li:hover {
+      text-decoration: underline;
+    }
+  
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      background-color: rgba(255,255,255,0.1);
+    }
+  
+    .chat-input input {
+      flex: 1;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 0.9em;
+    }
+  
+    .chat-input button {
+      margin-left: 8px;
+      background-color: #7f5af0;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  
+    .bot, .user {
+      margin-bottom: 10px;
+    }
+  
+    .user {
+      color: #9ae3ff;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Retinopathy Analyzer</h1>
+    <p>Understand, Prevent, and Take Action</p>
+  </header>
+
+  <!-- Back Button -->
+  <button id="backButton" onclick="goBack()">← Back</button>
+
+  <!-- Main Menu -->
+  <div id="main-menu" class="container">
+    <div class="card" onclick="showSection('diabetic')">
+      <h2>What is Diabetic Retinopathy?</h2>
+      <p>A complication of diabetes that affects the eyes, causing damage to the retina’s blood vessels.</p>
+     
+    </div>
+
+    <div class="card" onclick="showSection('hypertensive')">
+      <h2>What is Hypertensive Retinopathy?</h2>
+      <p>Damage to the retina due to high blood pressure, potentially leading to vision loss if untreated.</p>
+      
+    </div>
+  </div>
+
+  <!-- Diabetic Retinopathy Section -->
+  <div id="diabetic" class="content-section">
+    <h2>What is Diabetic Retinopathy?</h2>
+    <p>Diabetic Retinopathy is a complication of diabetes that affects the eyes. It occurs when high blood sugar levels cause damage to blood vessels in the retina, the light-sensitive tissue at the back of the eye.</p>
+    <p>Initially, diabetic retinopathy may cause no symptoms or only mild vision problems. However, over time, it can lead to permanent vision loss if not treated. It is one of the leading causes of blindness among working-age adults.</p>
+    <img src="{{ url_for('static',filename='dashboard_img1.png')}}" alt="Difference between an healty eye and HR affected eye">
+
+    <h2>Stages of Diabetic Retinopathy</h2>
+    <p><strong>1. Mild Nonproliferative Retinopathy:</strong> Small areas of swelling in the tiny blood vessels of the retina.</p>
+    <p><strong>2. Moderate Nonproliferative Retinopathy:</strong> Some blood vessels that nourish the retina are blocked.</p>
+    <p><strong>3. Severe Nonproliferative Retinopathy:</strong> More blood vessels are blocked, depriving areas of the retina of blood supply.</p>
+    <p><strong>4. Proliferative Retinopathy:</strong> The most advanced stage, where new, abnormal blood vessels grow, which can lead to serious vision problems.</p>
+
+    <h2>Symptoms</h2>
+    <p>• Blurred vision</p>
+    <p>• Floaters (dark spots or strings)</p>
+    <p>• Difficulty seeing at night</p>
+    <p>• Vision loss in advanced stages</p>
+
+    <h2>Prevention and Treatment</h2>
+    <p>• Control blood sugar, blood pressure, and cholesterol levels.</p>
+    <p>• Get regular eye exams (at least once a year).</p>
+    <p>• Treatments include laser therapy, injections, and surgery depending on severity.</p>
+  </div>
+
+  <!-- Hypertensive Retinopathy Section -->
+  <div id="hypertensive" class="content-section">
+    <h2>What is Hypertensive Retinopathy?</h2>
+    <p>Hypertensive Retinopathy refers to retinal damage caused by high blood pressure. It results from the thickening and narrowing of blood vessels, leading to reduced blood supply to the retina.</p>
+    
+    <img src="{{ url_for('static',filename='dashboard_img2.png')}}" alt="Difference between an healty eye and HR affected eye">
+    <h2>Signs and Symptoms</h2>
+    <p>• Blurred vision</p>
+    <p>• Headaches</p>
+    <p>• Vision loss (in severe cases)</p>
+    <p>• Swelling of the optic nerve</p>
+
+    <h2>Grading of Hypertensive Retinopathy</h2>
+    <p><strong>Grade 1:</strong> Mild narrowing of retinal arteries</p>
+    <p><strong>Grade 2:</strong> More noticeable narrowing and arteriovenous nicking</p>
+    <p><strong>Grade 3:</strong> Retinal hemorrhages and exudates</p>
+    <p><strong>Grade 4:</strong> Swelling of the optic disc (papilledema), medical emergency</p>
+
+    <h2>Prevention and Management</h2>
+    <p>• Control your blood pressure</p>
+    <p>• Eat a heart-healthy diet</p>
+    <p>• Exercise regularly</p>
+    <p>• Regular eye exams</p>
+  </div>
+ 
+  <!-- RetinoBot Icon -->
+<div id="retinoBot" onclick="openChat()" title="Chat with RetinoBot">🧠</div>
+
+<!-- Chat Box -->
+<div id="chatBox" class="chat-hidden">
+  <div class="chat-header">
+    👁️‍🗨️ RetinoBot
+    <span class="close-chat" onclick="closeChat()">❌</span>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <p class="bot">Hi! I’m RetinoBot. I can help you understand retinopathy.<br><br><strong>Try asking:</strong></p>
+    <ul>
+      <li onclick="askBot('What are the symptoms of diabetic retinopathy?')">• What are the symptoms of diabetic retinopathy?</li>
+      <li onclick="askBot('How do I prevent hypertensive retinopathy?')">• How do I prevent hypertensive retinopathy?</li>
+      <li onclick="askBot('What is the difference between diabetic and hypertensive retinopathy?')">• What's the difference between the two?</li>
+    </ul>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="userInput" placeholder="Ask something..." onkeydown="handleKey(event)" />
+    <button onclick="submitQuestion()">Send</button>
+  </div>
+</div>
+
+
+
+
+  <script>
+    const backButton = document.getElementById("backButton");
+
+    function showSection(sectionId) {
+      document.getElementById("main-menu").style.display = "none";
+      document.getElementById(sectionId).classList.add("active");
+      backButton.style.display = "block";
+    }
+
+    function goBack() {
+      const activeSection = document.querySelector('.content-section.active');
+      if (activeSection) {
+        activeSection.classList.remove('active');
+        document.getElementById("main-menu").style.display = "flex";
+        backButton.style.display = "none";
+      }
+    }
+   
+    function openChat() {
+      document.getElementById("chatBox").style.display = "flex";
+    }
+  
+    function closeChat() {
+      document.getElementById("chatBox").style.display = "none";
+    }
+  
+    function handleKey(event) {
+      if (event.key === "Enter") {
+        submitQuestion();
+      }
+    }
+  
+    function submitQuestion() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (text) {
+        addMessage('user', text);
+        respondToQuestion(text);
+        input.value = "";
+      }
+    }
+  
+    function askBot(question) {
+      addMessage('user', question);
+      respondToQuestion(question);
+    }
+  
+    function addMessage(type, text) {
+      const chatBody = document.getElementById("chatBody");
+      const p = document.createElement("p");
+      p.className = type;
+      p.textContent = text;
+      chatBody.appendChild(p);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  
+    function respondToQuestion(q) {
+      const response = getBotResponse(q.toLowerCase());
+      setTimeout(() => addMessage('bot', response), 500);
+    }
+  
+    function getBotResponse(q) {
+      if (q.includes("symptom") && q.includes("diabetic")) {
+        return "Symptoms include blurred vision, floaters, difficulty seeing at night, and potential vision loss.";
+      } else if (q.includes("prevent") && q.includes("hypertensive")) {
+        return "To prevent hypertensive retinopathy, manage your blood pressure, eat a heart-healthy diet, and get regular eye exams.";
+      } else if (q.includes("difference")) {
+        return "Diabetic retinopathy is caused by high blood sugar damaging the retina. Hypertensive retinopathy is due to high blood pressure affecting the retinal blood vessels.";
+      } else {
+        return "I'm still learning! Try asking about symptoms, prevention, or differences between retinopathies.";
+      }
+    }
+  </script> 
+  
+
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Retinopathy Precaution Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient( 135deg,#0f0c29, #302b63, #24243e);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+    }
+
+    .container {
+      background: rgba(30, 30, 47, 0.95);
+      padding: 2rem;
+      border-radius: 20px;
+      max-width: 600px;
+      width: 70%;
+      animation: fadeIn 2s ease-in-out;
+      overflow-y: auto;
+      max-height: 90vh;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.6s ease, box-shadow 0.6s ease;
+      position: relative;
+      box-sizing:border-box;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      top: -5%;
+      left: -5%;
+      width: 110%;
+      height: 110%;
+      background: linear-gradient(45deg, #ff00cc, #3333ff);
+      z-index: -1;
+      filter: blur(40px);
+      opacity: 0.4;
+      border-radius: 25px;
+      animation: glowPulse 3s infinite alternate ease-in-out;
+    }
+
+    @keyframes glowPulse {
+      0% { opacity: 0.3; filter: blur(25px); }
+      100% { opacity: 0.6; filter: blur(40px); }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      color: white;
+      background: linear-gradient(90deg, #00ffe7, #9a00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+      display: block;
+      color: #ccc;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      background: #2c2c3e;
+      color: white;
+      transition: 0.3s;
+    }
+
+    select:focus {
+      outline: none;
+      box-shadow: 0 0 5px #9c27b0;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #ff00cc, #3333ff);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 10px #9c27b0;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #3333ff, #ff00cc);
+      box-shadow: 0 0 20px #9c27b0;
+    }
+
+    .result {
+      margin-top: 2rem;
+      background: #2e2e44;
+      padding: 1rem;
+      border-left: 5px solid #00e676;
+      border-radius: 10px;
+      display: none;
+      color: #e0f2f1;
+    }
+
+    .result h3 {
+      margin: 0 0 10px;
+      color: #76ff03;
+    }
+
+    .result ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🩺🔬 "Know Before It Grows"</h1>
+  <form id="symptomForm">
+    <label>Do you experience blurry vision?</label>
+    <select name="blurry" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Do you have high blood pressure?</label>
+    <select name="bp" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Are you diabetic?</label>
+    <select name="diabetic" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Do you experience eye strain from screen time?</label>
+    <select name="screen" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Your age group:</label>
+    <select name="age" required>
+      <option value="below_30">Below 30</option>
+      <option value="30_50">30 to 50</option>
+      <option value="above_50">Above 50</option>
+    </select>
+
+    <label>Do you see floaters or black spots?</label>
+    <select name="floaters" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Do you have trouble seeing at night?</label>
+    <select name="night" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Do your eyes feel dry or itchy?</label>
+    <select name="dry" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Do you wear glasses or contact lenses?</label>
+    <select name="glasses" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <label>Has it been over 1 year since your last eye check-up?</label>
+    <select name="checkup" required>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <button type="submit">Check Risk</button>
+  </form>
+
+  <div class="result" id="resultBox">
+    <h3>Your Risk Level: <span id="riskLevel"></span></h3>
+    <ul id="suggestionsList"></ul>
+  </div>
+</div>
+
+<script>
+  document.getElementById("symptomForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    let score = 0;
+    const riskyFields = ["blurry", "bp", "diabetic", "screen", "floaters", "night", "dry", "checkup"];
+    riskyFields.forEach(field => {
+      if (form[field].value === "yes") score++;
+    });
+
+    if (form["age"].value === "above_50") score += 2;
+    else if (form["age"].value === "30_50") score += 1;
+
+    const riskLevel = document.getElementById("riskLevel");
+    const suggestions = document.getElementById("suggestionsList");
+    const resultBox = document.getElementById("resultBox");
+
+    let level = "";
+    suggestions.innerHTML = "";
+
+    if (score <= 3) {
+      level = "Low";
+      suggestions.innerHTML += "<li>Keep up regular checkups.</li>";
+      suggestions.innerHTML += "<li>Maintain a healthy lifestyle.</li>";
+    } else if (score <= 6) {
+      level = "Moderate";
+      suggestions.innerHTML += "<li>Visit an eye specialist soon.</li>";
+      suggestions.innerHTML += "<li>Reduce screen time and monitor symptoms.</li>";
+    } else {
+      level = "High";
+      suggestions.innerHTML += "<li>Seek medical advice immediately.</li>";
+      suggestions.innerHTML += "<li>Schedule an eye exam ASAP.</li>";
+    }
+
+    riskLevel.textContent = level;
+    resultBox.style.display = "block";
+  });
+</script>
+
+</body>
+</html>

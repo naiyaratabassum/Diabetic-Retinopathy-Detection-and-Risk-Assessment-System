@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>👁️ RetinoTrack – Retinal Report Comparison</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient( 135deg,#0f0c29, #302b63, #24243e);
+      
+      
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: rgba(30, 30, 47, 0.95);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 700px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      color: #49a5e7;
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      color: #7bcef5;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #ccc;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #00838f;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #006064;
+    }
+
+    .output {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background: #e0f7fa;
+      border-left: 5px solid #006064;
+      border-radius: 10px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .output h3 {
+      margin-top: 0;
+      color: #004d40;
+    }
+
+    #downloadBtn {
+      display: none;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>👁️ RetinoTrack – Retinal Report Comparison</h2>
+
+    
+    <div class="section-title">📄 Upload Previous Report</div>
+    
+    <input type="file" id="previousFile" accept=".jpg,.png,.pdf,.txt,.docx">
+
+    
+    <div class="section-title">🆕 Upload Current Report</div>
+    
+    <input type="file" id="currentFile" accept=".jpg,.png,.pdf,.txt,.docx">
+
+    
+    <button onclick="compareReports()">Compare & Analyze</button>
+
+    
+    <div class="output" id="resultBox">
+      <h3>📈 Result Summary</h3>
+      <p><strong>Previous Stage:</strong> Mild Non-Proliferative Retinopathy</p>
+      <p><strong>Current Stage:</strong> Moderate Non-Proliferative Retinopathy</p>
+      <p><strong>Detected Change:</strong> Disease has progressed. Recommend consultation with ophthalmologist.</p>
+      <p><strong>Next Visit:</strong> Within 1 week recommended.</p>
+    </div>
+
+    
+    <button id="downloadBtn" onclick="downloadReport()">📥 Download PDF Report</button>
+  </div>
+
+  <script>
+    function compareReports() {
+      const prevFile = document.getElementById("previousFile").files[0];
+      const currentFile = document.getElementById("currentFile").files[0];
+      const resultBox = document.getElementById("resultBox");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      if (!prevFile || !currentFile) {
+        alert("Please upload both previous and current reports.");
+        return;
+      }
+
+      
+      setTimeout(() => {
+        resultBox.style.display = "block";
+        downloadBtn.style.display = "inline-block";
+        resultBox.scrollIntoView({ behavior: "smooth" });
+      }, 800);
+    }
+
+    function downloadReport() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+    
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text(" RetinoTrack Report Summary", 20, 20);
+    
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.text("Previous Stage: Mild Non-Proliferative Retinopathy", 20, 40);
+      doc.text("Current Stage: Moderate Non-Proliferative Retinopathy", 20, 50);
+      doc.text("Detected Change: Disease progression observed.", 20, 60);
+      doc.text("Recommendation: Please consult an ophthalmologist.", 20, 70);
+      doc.text("Next Visit: Recommended within 1 week.", 20, 80);
+    
+   
+      doc.setFontSize(10);
+      doc.setTextColor(150);
+      doc.text(" Stay calm. Early care leads to better outcomes.", 20, 100);
+    
+      doc.save("RetinoTrack_Report_Summary.pdf");
+    }
+    
+  </script>
+
+</body>
+</html>

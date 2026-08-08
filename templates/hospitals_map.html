@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nearby Hospitals Locator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map { height: 80vh; width: 100%; }
+    .input-container { margin: 10px 0; text-align: center; }
+    input, button { padding: 8px; font-size: 16px; border-radius: 6px; margin: 5px; }
+    #appointmentForm {
+      position: fixed; top: 20%; left: 35%;
+      background: #fff; border: 2px solid #888;
+      border-radius: 10px; padding: 20px;
+      z-index: 9999; display: none;
+      box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Nearby Hospitals Locator</h1>
+  <div class="input-container">
+    <input type="text" id="location" placeholder="Enter city, e.g. Bengaluru">
+    <button onclick="findHospitals()">Find Hospitals</button>
+  </div>
+  <div id="map"></div>
+
+  <!-- Appointment form -->
+  <div id="appointmentForm">
+    <h3>Book Appointment at <span id="hospitalName"></span></h3>
+    <input type="text" id="userName" placeholder="Your Name" required><br>
+    <input type="email" id="userEmail" placeholder="Your Email" required><br>
+    <input type="date" id="appointmentDate" required><br>
+    <input type="time" id="appointmentTime" required><br>
+    <button onclick="submitAppointment()">Confirm</button>
+    <button onclick="closeForm()">Cancel</button>
+  </div>
+
+  <script>
+    const map = L.map('map').setView([20, 77], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: 'Map data © OpenStreetMap contributors'
+    }).addTo(map);
+
+    const doctorNames = [
+      "Dr. Aditi Rao", "Dr. Rajesh Sharma", "Dr. Sneha Patel",
+      "Dr. Vivek Nair", "Dr. Anjali Menon", "Dr. Karan Kapoor"
+    ];
+
+    function getRandomDoctor() {
+      const name = doctorNames[Math.floor(Math.random() * doctorNames.length)];
+      return `<strong>${name}</strong><br>Specialization: Ophthalmologist`;
+    }
+
+    async function findHospitals() {
+      const locationInput = document.getElementById('location').value;
+      if (!locationInput) {
+        alert('Please enter a location.');
+        return;
+      }
+
+      try {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationInput)}`);
+        const geoData = await geoRes.json();
+
+        if (geoData.length === 0) {
+          alert('Location not found.');
+          return;
+        }
+
+        const { lat, lon } = geoData[0];
+        map.setView([lat, lon], 13);
+
+        const query = `
+[out:json];
+(
+  node(around:7000,${lat},${lon})[amenity=hospital];
+  way(around:7000,${lat},${lon})[amenity=hospital];
+  relation(around:7000,${lat},${lon})[amenity=hospital];
+);
+out center;`;
+
+        const encodedQuery = encodeURIComponent(query);
+        const hospitalRes = await fetch(`https://overpass-api.de/api/interpreter?data=${encodedQuery}`);
+        const hospitalData = await hospitalRes.json();
+
+        map.eachLayer(layer => {
+          if (layer instanceof L.Marker) map.removeLayer(layer);
+        });
+
+        if (hospitalData.elements.length === 0) {
+          alert("No hospitals found nearby.");
+          return;
+        }
+
+        hospitalData.elements.forEach(hospital => {
+          const name = hospital.tags.name || "Unnamed Hospital";
+          const doctorInfo = getRandomDoctor();
+          const coords = hospital.lat ? [hospital.lat, hospital.lon] : [hospital.center.lat, hospital.center.lon];
+          const marker = L.marker(coords).addTo(map);
+          marker.bindPopup(`
+            <b>${name}</b><br>
+            ${doctorInfo}<br><br>
+            <button onclick="openForm('${name}')">Book Appointment</button>
+          `);
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to fetch data.");
+      }
+    }
+
+    function openForm(hospital) {
+      document.getElementById('appointmentForm').style.display = 'block';
+      document.getElementById('hospitalName').textContent = hospital;
+      document.getElementById('appointmentForm').dataset.hospital = hospital;
+    }
+
+    function closeForm() {
+      document.getElementById('appointmentForm').style.display = 'none';
+    }
+
+    function convertTimeToAMPM(time24) {
+      const [hour, minute] = time24.split(':');
+      const h = parseInt(hour);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const hour12 = h % 12 || 12;
+      return `${hour12}:${minute} ${ampm}`;
+    }
+
+    function submitAppointment() {
+      const name = document.getElementById('userName').value;
+      const email = document.getElementById('userEmail').value;
+      const date = document.getElementById('appointmentDate').value;
+      const time = convertTimeToAMPM(document.getElementById('appointmentTime').value);
+      const hospital = document.getElementById('appointmentForm').dataset.hospital;
+
+      if (!name || !email || !date || !time) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      closeForm();
+
+      alert(`🎉 Appointment Confirmed!\n\n📍 Hospital: ${hospital}\n👤 Name: ${name}\n📧 Email: ${email}\n📅 Date: ${date}\n⏰ Time: ${time}`);
+    }
+  </script>
+</body>
+</html>
