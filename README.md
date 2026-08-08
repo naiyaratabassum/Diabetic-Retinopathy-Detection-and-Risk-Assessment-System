@@ -19,7 +19,7 @@ This project was developed as part of the Bachelor of Engineering final-year pro
 - Comparison of Previous and Current Patient Reports
 - Hospital Recommendation using Location Services
 - Appointment Assistance
-- Patient Record Management
+
 
 ---
 
@@ -55,7 +55,7 @@ This project was developed as part of the Bachelor of Engineering final-year pro
 
 ## Dataset
 
-The CNN model was trained using retinal fundus images obtained from the **Messidor dataset** along with publicly available retinal image datasets from **Kaggle**.
+The CNN model was trained using retinal fundus images obtained from the **EyePACS dataset** along with publicly available retinal image datasets from **Kaggle**.
 
 ---
 
@@ -66,7 +66,6 @@ app.py                  # Main Flask Application
 cnn.py                  # CNN Model
 templates/              # HTML Templates
 static/                 # Application Images
-train/                  # Training Dataset
 test/                   # Testing Dataset
 screenshots/            # Application Screenshots
 requirements.txt
